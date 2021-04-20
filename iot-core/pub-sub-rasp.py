@@ -145,10 +145,16 @@ if __name__ == '__main__':
 
     subscribe_result = subscribe_future.result()
     print("Subscribed with {}".format(str(subscribe_result['qos'])))
-
+    
+    # try to detect an event
+    try:
+    GPIO.add_event_detect(SENSOR_PIN , GPIO.RISING, callback=my_callback)
+    while True:
+ 
     # Publish message to server desired number of times.
     # This step is skipped if message is blank.
     # This step loops forever if count was set to 0.
+       
     if args.message:
         if args.count == 0:
             print ("Sending messages until program killed")
@@ -165,6 +171,7 @@ if __name__ == '__main__':
                 qos=mqtt.QoS.AT_LEAST_ONCE)
             time.sleep(1)
             publish_count += 1
+           
 
     # Wait for all messages to be received.
     # This waits forever if count was set to 0.
@@ -176,6 +183,7 @@ if __name__ == '__main__':
     print("{} message(s) received.".format(received_count))
 
     # Disconnect
+    GPIO.cleanup()
     print("Disconnecting...")
     disconnect_future = mqtt_connection.disconnect()
     disconnect_future.result()
