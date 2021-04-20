@@ -5,8 +5,15 @@ import sys
 import threading
 import time
 from uuid import uuid4
+import RPi.GPIO as GPIO
+import time
+ 
+SENSOR_PIN = 23
+ 
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(SENSOR_PIN, GPIO.IN)
 
-# This sample uses the Message Broker for AWS IoT to send and receive messages
+# uses the Message Broker for AWS IoT to send and receive messages
 # through an MQTT connection. On startup, the device connects to the server,
 # subscribes to a topic, and begins publishing messages to that topic.
 # The device should receive those same messages back from the message broker,
@@ -22,9 +29,11 @@ parser.add_argument('--root-ca', help="File path to root certificate authority, 
                                       "your trust store.")
 parser.add_argument('--client-id', default="test-" + str(uuid4()), help="Client ID for MQTT connection.")
 parser.add_argument('--topic', default="test/topic", help="Topic to subscribe to, and publish messages to.")
-parser.add_argument('--message', default="Hello World!", help="Message to publish. " +
+# add argument for message
+parser.add_argument('--message', default="Movement Detected", help="Message to publish. " +
                                                               "Specify empty string to publish nothing.")
-parser.add_argument('--count', default=10, type=int, help="Number of messages to publish/receive before exiting. " +
+#want this to "run forever"
+parser.add_argument('--count', default=0, type=int, help="Number of messages to publish/receive before exiting. " +
                                                           "Specify 0 to run forever.")
 parser.add_argument('--use-websocket', default=False, action='store_true',
     help="To use a websocket instead of raw mqtt. If you " +
@@ -159,8 +168,9 @@ if __name__ == '__main__':
 
     # Wait for all messages to be received.
     # This waits forever if count was set to 0.
+    # waiting for movement
     if args.count != 0 and not received_all_event.is_set():
-        print("Waiting for all messages to be received...")
+        print("Waiting for movement...")
 
     received_all_event.wait()
     print("{} message(s) received.".format(received_count))
