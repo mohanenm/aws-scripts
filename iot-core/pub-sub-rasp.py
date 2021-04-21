@@ -32,7 +32,7 @@ def my_callback(channel):
     now_str = now.strftime('%Y-%m-%dT%H:%M:%SZ')
     movement = bool("movement-detected")
     if movement == True:
-     payload = '{ "timestamp": "' + now_str + '","motion": ' + "Movement Detected' }'
+     payload = '{ "timestamp": "' + now_str + '","motion": ' + "Movement Detected" + '}'
         print payload
         myMQTTClient.publish("motion-sense/data", payload, 0)
         sleep(4)
