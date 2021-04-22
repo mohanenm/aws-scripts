@@ -5,54 +5,61 @@ from datetime import date, datetime
 import time
 import json
 
+# initialize constant pin for in 
 SENSOR_PIN = 23
-
+# set up the pins on the raspberry pi correctly
+# read on pin 23 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(SENSOR_PIN, GPIO.IN)
 
-# initialize GPIO
- 
 # AWS IoT certificate based connection
-myMQTTClient = AWSIoTMQTTClient("123afhlss456")
-myMQTTClient.configureEndpoint("******-ats.iot.us-east-1.amazonaws.com",$
-myMQTTClient.configureCredentials("/home/pi/certs/AmazonRootCA1.pem", "/home/pi/certs/*****-private.pem.key", "/home/pi/certs/****-certificate.pem.crt")
-myMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish qu$
-myMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
-myMQTTClient.configureConnectDisconnectTimeout(10)  # 10 sec
-myMQTTClient.configureMQTTOperationTimeout(5)  # 5 sec
-                                  
+# start a client named motion detector
+# set endpoint to my iot thing located on IOT core
+# Check the certificates on my machine(these can be located on iot core)
+# queueSize - Size of the queue for offline publish requests queueing.
+# If set to 0, the queue is disabled. If set to -1, the queue size is set to be infinite(our case is infinite)
+# configure the draining speed of queued requests while thing was offline(draining frequency)
+# connectdisconnect timeout -Used to configure the time in seconds to wait for a CONNACK or a disconnect to complete. Should be called before connect.
+# Mqtt operation timeout --> Used to configure the timeout in seconds for MQTT QoS 1 publish, subscribe and unsubscribe. Should be called before connect.
+myMQTTClient = AWSIoTMQTTClient("motion-detector")
+myMQTTClient.configureEndpoint("aioy8hqv8f6f5-ats.iot.us-east-1.amazonaws.com", 8883)
+myMQTTClient.configureCredentials("/home/pi/certs/AmazonRootCA1.pem", "/home/pi/certs/638c284605-private.pem.key", "/home/pi/certs/638c284605-certificate.pem.crt")
+myMQTTClient.configureOfflinePublishQueueing(-1)  
+myMQTTClient.configureDrainingFrequency(2)  
+myMQTTClient.configureConnectDisconnectTimeout(10)  
+myMQTTClient.configureMQTTOperationTimeout(5)  
+
+# connect to the client
 myMQTTClient.connect()
-myMQTTClient.publish("motion-sense/info", "connected", 0)
- 
-#loop and publish sensor reading
+# publish information about this connection to the topic motion-sense/info
+myMQTTClient.publish("motion-sense/info", "motion-sensor connected", 0)
 
 def my_callback(channel):
-    now = datetime.utcnow()
-    now_str = now.strftime('%Y-%m-%dT%H:%M:%SZ')
+# get the current date and time from the device that the script is running on, all of which will be part of the payload
+    now = datetime.now()
+    time_now = now.strftime("%I:%M:%S %p")
+    date_now = now.strftime("%m/%d/%Y")
+    motion_message = "motion detected @ sensor 1"
     movement = bool("movement-detected")
-
-                                  
     if movement == True:
-        result = {'time': now_string, 'motion': 'movement detected'}
-        result = json.dumps(result)
-        payload = json.loads(result)
+        in_dict = {"date":date_now, "time":time_now, "motion":motion_message}
+      # use dumps to make payload nice...will get an error message on topic and not be able to work with SNS if payload is not correct data type
+        payload = json.dumps(in_dict)
+      # Finally, publish the message to IOT core topic motion-sense/data
         myMQTTClient.publish("motion-sense/data", payload, 0)
+       # also print the payload to the screen(if applicable)
+        print(payload)
         sleep(4)
     else:
-        result = {'time': now_string, 'motion': 'no movement'}
-        result = json.dumps(result)
-        payload = json.loads(result)
-        myMQTTClient.publish("motion-sense/data", payload, 0)
-        sleep(4)
+        print("No Motion Detected")
+        sleep(1)
+
 
 try:
-    GPIO.add_event_detect(SENSOR_PIN , GPIO.RISING, callback=my_callback)
+    GPIO.add_event_detect(SENSOR_PIN, GPIO.RISING, callback=my_callback)
     while True:
         time.sleep(100)
 except KeyboardInterrupt:
     print("Finish...")
-
-GPIO.cleanup()
-
 
 
