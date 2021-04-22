@@ -1,9 +1,9 @@
-import RPi.GPIO as GPIO
-from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
-from time import sleep
-from datetime import date, datetime
-import time
-import json
+import RPi.GPIO as GPIO 
+from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient #aws iot sdk --> run with python3
+from time import sleep # for board
+from datetime import date, datetime # to get data and time from pi
+# import time 
+import json # for jsondumps
 
 # initialize constant pin for in 
 SENSOR_PIN = 23
@@ -40,21 +40,23 @@ def my_callback(channel):
     time_now = now.strftime("%I:%M:%S %p")
     date_now = now.strftime("%m/%d/%Y")
     motion_message = "motion detected @ sensor 1"
-    movement = bool("movement-detected")
-    if movement == True:
-        in_dict = {"date":date_now, "time":time_now, "motion":motion_message}
+      # format payload
+    in_dict = {"date":date_now, "time":time_now, "motion":motion_message}
       # use dumps to make payload nice...will get an error message on topic and not be able to work with SNS if payload is not correct data type
-        payload = json.dumps(in_dict)
+    payload = json.dumps(in_dict)
       # Finally, publish the message to IOT core topic motion-sense/data
-        myMQTTClient.publish("motion-sense/data", payload, 0)
+    myMQTTClient.publish("motion-sense/data", payload, 0)
        # also print the payload to the screen(if applicable)
-        print(payload)
-        sleep(4)
-    else:
-        print("No Motion Detected")
-        sleep(1)
+    print(payload)
+    sleep(4)
+    
+    # IGNORE, MY OWN TEST STUFF
+    # do not copy
+    #  else:
+    #    print("No Motion Detected")
+    #   sleep(1)
 
-
+# look for events on board
 try:
     GPIO.add_event_detect(SENSOR_PIN, GPIO.RISING, callback=my_callback)
     while True:
