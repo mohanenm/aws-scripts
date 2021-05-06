@@ -21,9 +21,9 @@ GPIO.setup(SENSOR_PIN, GPIO.IN)
 # configure the draining speed of queued requests while thing was offline(draining frequency)
 # connectdisconnect timeout -Used to configure the time in seconds to wait for a CONNACK or a disconnect to complete. Should be called before connect.
 # Mqtt operation timeout --> Used to configure the timeout in seconds for MQTT QoS 1 publish, subscribe and unsubscribe. Should be called before connect.
-myMQTTClient = AWSIoTMQTTClient("motion-detector")
-myMQTTClient.configureEndpoint("aioy8hqv8f6f5-ats.iot.us-east-1.amazonaws.com", 8883)
-myMQTTClient.configureCredentials("/home/pi/certs/AmazonRootCA1.pem", "/home/pi/certs/638c284605-private.pem.key", "/home/pi/certs/638c284605-certificate.pem.crt")
+myMQTTClient = AWSIoTMQTTClient("raspberrypi")
+myMQTTClient.configureEndpoint("endpoint", 8883)
+myMQTTClient.configureCredentials("/home/pi/certs/AmazonRootCA1.pem", "/home/pi/certs/private.pem.key", "/home/pi/certs/certificate.pem.crt")
 myMQTTClient.configureOfflinePublishQueueing(-1)  
 myMQTTClient.configureDrainingFrequency(2)  
 myMQTTClient.configureConnectDisconnectTimeout(10)  
